@@ -1,4 +1,4 @@
-#include <pr2_control/pr2_keyboard_r.hpp>
+#include <pr2_control/pr2_keyboard.hpp>
 #include <stdlib.h> 
 
 int main(int argc, char **argv)
@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 	tf_pose.orientation.z = strtod(argv[6], NULL);
 	tf_pose.orientation.w = strtod(argv[7], NULL);
 
-    	pr2_control::TFGoal_r my_tf_goal(nh, tf_pose);
+    	pr2_control::TFGoal my_tf_goal(nh, tf_pose);
 
    	 try
    	 {

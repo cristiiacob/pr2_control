@@ -1,18 +1,18 @@
-#ifndef PR2_CONTROL_PR2_KEYBOARD_R_HPP
-#define PR2_CONTROL_PR2_KEYBOARD_R_HPP
+#ifndef PR2_CONTROL_PR2_KEYBOARD_HPP
+#define PR2_CONTROL_PR2_KEYBOARD_HPP
 
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 
 namespace pr2_control
 {
-	class TFGoal_r
+	class TFGoal
 	{
 	    public:
-		TFGoal_r(const ros::NodeHandle& nh, const geometry_msgs::Pose& tf_goal): nh_(nh), tf_goal_(tf_goal)
+		TFGoal(const ros::NodeHandle& nh, const geometry_msgs::Pose& tf_goal): nh_(nh), tf_goal_(tf_goal)
 		{}
 
-		~TFGoal_r() {}
+		~TFGoal() {}
 			
 	//	void callback(const ros::TimerEvent& e)
 		void callback()

@@ -46,11 +46,17 @@ target_link_libraries(l_arm_controller ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIE
 add_executable(r_arm_ik src/${PROJECT_NAME}/r_arm_ik.cpp)
 target_link_libraries(r_arm_ik ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
+add_executable(l_arm_ik src/${PROJECT_NAME}/l_arm_ik.cpp)
+target_link_libraries(l_arm_ik ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+
 add_executable(r_arm_fk src/${PROJECT_NAME}/r_arm_fk.cpp)
 target_link_libraries(r_arm_fk ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
-add_executable(pr2_keyboard_r src/${PROJECT_NAME}/pr2_keyboard_r.cpp)
-target_link_libraries(pr2_keyboard_r ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+add_executable(l_arm_fk src/${PROJECT_NAME}/l_arm_fk.cpp)
+target_link_libraries(l_arm_fk ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+
+add_executable(pr2_keyboard src/${PROJECT_NAME}/pr2_keyboard.cpp)
+target_link_libraries(pr2_keyboard ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
 set(TEST_SRCS
    test/main.cpp
