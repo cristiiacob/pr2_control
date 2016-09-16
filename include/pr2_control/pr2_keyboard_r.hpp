@@ -25,7 +25,7 @@ namespace pr2_control
      		{
         		pub_ = nh_.advertise<geometry_msgs::Pose>("/tf_goal_r_arm", 1);
         	//	timer_ = nh_.createTimer(period, &TFGoal_R::callback, this);
-			while(pub_.getNumSubscribers() == 0)
+			while(pub_.getNumSubscribers() < 1)
    				 ros::Duration(0.5).sleep();	
 			callback();
       		}

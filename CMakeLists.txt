@@ -67,6 +67,9 @@ target_link_libraries(pr2_keyboard_r ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES}
 add_executable(pr2_keyboard_l src/${PROJECT_NAME}/pr2_keyboard_l.cpp)
 target_link_libraries(pr2_keyboard_l ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
+add_executable(client src/${PROJECT_NAME}/client.cpp)
+target_link_libraries(client ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+
 set(TEST_SRCS
    test/main.cpp
   #test/${PROJECT_NAME}/kdl_functions.cpp 
