@@ -1,5 +1,5 @@
-#ifndef PR2_CONTROL_L_ARM_FK_HPP
-#define PR2_CONTROL_L_ARM_FK_HPP
+#ifndef PR2_CONTROL_R_ARM_FK_HPP
+#define PR2_CONTROL_R_ARM_FK_HPP
 
 #include <ros/ros.h>
 #include <ros/console.h>
@@ -13,14 +13,14 @@
 	
 namespace pr2_control
 {
-	class Transform_l_fk
+	class Transform_r_fk
 	{
 
 	    public:
-		Transform_l_fk(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_footprint"), target_frame_("l_gripper_tool_frame"), once_(true)
+		Transform_r_fk(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_link"), target_frame_("r_gripper_tool_frame"), once_(true)
 		{}
 
-		~Transform_l_fk() {}
+		~Transform_r_fk() {}
 	
 		KDL::Frame getTF(const std::string& frame_id, const std::string& child_frame_id)
 		{
@@ -87,7 +87,7 @@ namespace pr2_control
 			createChain(robot_desc);
 			fk_solver_ = std::make_shared<KDL::ChainFkSolverPos_recursive>(KDL::ChainFkSolverPos_recursive(chain_));	
 			joint_names_ = getJointNames(chain_);	
-		 	sub_ = nh_.subscribe("joint_states", 1, &Transform_l_fk::chatterCallback, this);
+		 	sub_ = nh_.subscribe("joint_states", 1, &Transform_r_fk::chatterCallback, this);
 	    	}	
 	
 	    private:

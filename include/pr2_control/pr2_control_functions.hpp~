@@ -45,7 +45,7 @@ namespace pr2_control
 	inline KDL::JntArray calculateIK_JL(const std::shared_ptr<KDL::ChainIkSolverPos_NR_JL>& ik_solver, const KDL::Frame& goal_frame, const KDL::JntArray& joints_in)
 	{	
 		KDL::JntArray joints_out;
-		ik_solver->CartToJnt(joints_in, goal_frame, joints_out);
+		ik_solver->CartToJnt(joints_in, goal_frame, joints_out);//!! Seg fault
 		return joints_out;
 	}
 

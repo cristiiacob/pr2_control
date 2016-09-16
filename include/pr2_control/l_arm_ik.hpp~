@@ -1,5 +1,5 @@
-#ifndef PR2_CONTROL_R_ARM_IK_HPP
-#define PR2_CONTROL_R_ARM_IK_HPP
+#ifndef PR2_CONTROL_L_ARM_IK_HPP
+#define PR2_CONTROL_L_ARM_IK_HPP
 
 #include <ros/ros.h>
 #include <kdl_parser/kdl_parser.hpp>
@@ -12,13 +12,13 @@
 
 namespace pr2_control
 {
-	class Transform_r_ik
+	class Transform_l_ik
 	{
 	    public:
-		Transform_r_ik(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_footprint"), target_frame_("r_gripper_tool_frame"), once_(true)
+		Transform_l_ik(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_link"), target_frame_("l_gripper_tool_frame"), once_(true)
 		{}
 
-		~Transform_r_ik() {}
+		~Transform_l_ik() {}
 		
 		void stateCallback(const sensor_msgs::JointState::ConstPtr& msg)
 		{
@@ -86,7 +86,7 @@ namespace pr2_control
 			for(size_t i = 0; i <joint_names_.size(); ++i)
 				ROS_INFO("%s", joint_names_[i].c_str());	
 			
-			sub_state_ = nh_.subscribe("joint_states", 1, &Transform_r_ik::stateCallback, this);
+			sub_state_ = nh_.subscribe("joint_states", 1, &Transform_l_ik::stateCallback, this);
 			
 			try
 			{
@@ -97,8 +97,8 @@ namespace pr2_control
 				ROS_ERROR("%s",e.what());	
 			}
 					
-		 	sub_goal_ = nh_.subscribe("/tf_goal_r_arm", 1, &Transform_r_ik::goalCallback, this);	
-			pub_ = nh_.advertise<std_msgs::Float32MultiArray>("/goal_joint_pos_r_arm", 1);
+		 	sub_goal_ = nh_.subscribe("/tf_goal", 1, &Transform_l_ik::goalCallback, this);	
+			pub_ = nh_.advertise<std_msgs::Float32MultiArray>("/goal_joint_pos", 1);
         		//timer_ = nh_.createTimer(period, &Transform_ik::goalPublishCallback, this);
 	    	}
 	

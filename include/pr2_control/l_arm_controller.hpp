@@ -137,7 +137,7 @@ namespace pr2_control
 
 		void start()
 		{
-			sub_goal_ = nh_.subscribe("/goal_joint_pos", 1, &RobotLArm::callback, this);
+			sub_goal_ = nh_.subscribe("/goal_joint_pos_l_arm", 1, &RobotLArm::callback, this);
 
 			while(goal_points_.empty())
 			{

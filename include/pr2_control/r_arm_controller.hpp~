@@ -75,7 +75,7 @@ namespace pr2_control
 			goal_arm.trajectory.header.stamp = ros::Time::now() + ros::Duration(1.0);
 			goal_torso.trajectory.header.stamp = ros::Time::now() + ros::Duration(1.0);
 			traj_client_arm_->sendGoal(goal_arm);
-			traj_client_torso_->sendGoal(goal_torso);
+		//	traj_client_torso_->sendGoal(goal_torso);
 		}
 		
 		control_msgs::FollowJointTrajectoryGoal torsoExtensionTrajectory()

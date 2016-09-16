@@ -1,24 +1,27 @@
-#ifndef PR2_CONTROL_R_ARM_IK_HPP
-#define PR2_CONTROL_R_ARM_IK_HPP
+#ifndef PR2_CONTROL_R_ARM_IK_JL_HPP
+#define PR2_CONTROL_R_ARM_IK_JL_HPP
 
 #include <ros/ros.h>
 #include <kdl_parser/kdl_parser.hpp>
-#include <kdl/chainiksolverpos_lma.hpp>
+#include <kdl/chainfksolverpos_recursive.hpp>
+#include <kdl/chainiksolverpos_nr_jl.hpp>
+#include <kdl/chainiksolvervel_pinv_givens.hpp>
 #include <pr2_control/pr2_control_functions.hpp>
 #include <kdl/frames_io.hpp>
 #include <geometry_msgs/Pose.h>
 #include "kdl_conversions/kdl_msg.h"
 #include <std_msgs/Float32MultiArray.h>
+#include <urdf/model.h>
 
 namespace pr2_control
 {
-	class Transform_r_ik
+	class Transform_r_ik_jl
 	{
 	    public:
-		Transform_r_ik(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_footprint"), target_frame_("r_gripper_tool_frame"), once_(true)
+		Transform_r_ik_jl(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_footprint"), target_frame_("r_gripper_tool_frame"), once_(true)
 		{}
 
-		~Transform_r_ik() {}
+		~Transform_r_ik_jl() {}
 		
 		void stateCallback(const sensor_msgs::JointState::ConstPtr& msg)
 		{
@@ -29,12 +32,7 @@ namespace pr2_control
 				joint_indeces_ = createJointIndices(createIndexMap(msg, joint_names_), joint_names_);
 				once_ = false;
 			}
-		//	q_out_ = calculateIK(ik_solver_, goal_frame_, toKDL(*msg, joint_indeces_));	
-		/*	using KDL::operator<<;
-			ROS_DEBUG_STREAM("IK: " << std::endl << q_out_ << std::endl);
-			for (size_t i = 0; i < q_out_.rows(); ++i)		
-				ROS_INFO("%f",q_out_(i)); 
-		*/		
+		
 		}
 
 		void goalCallback(const geometry_msgs::Pose::ConstPtr& msg)
@@ -42,8 +40,9 @@ namespace pr2_control
 // TODO: print input msg
 			tf::poseMsgToKDL(*msg, goal_frame_);		
 			if(!last_joint_state_.position.empty())
-                        {
-				q_out_ = calculateIK(ik_solver_, goal_frame_, toKDL(last_joint_state_, joint_indeces_));
+                        {	
+				q_out_ = calculateIK_JL(ik_solver_pos_, goal_frame_, toKDL(last_joint_state_, joint_indeces_));
+				ROS_INFO("%d", q_out_.rows());
 			
 				std_msgs::Float32MultiArray pub_msg;
 				for(int i = 0; i< q_out_.rows(); ++i)
@@ -80,13 +79,39 @@ namespace pr2_control
 		        std::string robot_desc;
 			nh_.param("robot_description", robot_desc, std::string());
 			createChain(robot_desc);
-			ik_solver_ = std::make_shared<KDL::ChainIkSolverPos_LMA>(KDL::ChainIkSolverPos_LMA(chain_));	
+			urdf::Model model;
+
+    			if (!model.initString(robot_desc))
+			{
+      				ROS_ERROR("Failed to parse urdf file");
+       				//return -1; throw exception
+     			}
+			
 			joint_names_ = getJointNames(chain_);
 			
 			for(size_t i = 0; i <joint_names_.size(); ++i)
-				ROS_INFO("%s", joint_names_[i].c_str());	
-			
-			sub_state_ = nh_.subscribe("joint_states", 1, &Transform_r_ik::stateCallback, this);
+				ROS_INFO("%s", joint_names_[i].c_str());
+
+			KDL::JntArray q_min(chain_.getNrOfJoints()), q_max(chain_.getNrOfJoints());
+			for (size_t i=0; i < chain_.getNrOfJoints(); ++i) 
+			{
+				if(model.getJoint(joint_names_[i])->type == 2) //CONTINUOUS
+				{
+					q_min(i) = -1000;
+					q_max(i) = 1000;
+				}
+				else
+				{
+					q_min(i) = model.getJoint(joint_names_[i])->limits->lower;
+	       				q_max(i) = model.getJoint(joint_names_[i])->limits->upper;	
+				}
+				ROS_INFO("%s lower: %f", joint_names_[i].c_str(), q_min(i));
+				ROS_INFO("%s upper: %f", joint_names_[i].c_str(), q_max(i));
+   			}
+			fkpossolver_ = std::make_shared<KDL::ChainFkSolverPos_recursive>(KDL::ChainFkSolverPos_recursive(chain_));
+			ikvelsolver_ = std::make_shared<KDL::ChainIkSolverVel_pinv_givens>(KDL::ChainIkSolverVel_pinv_givens(chain_));
+			ik_solver_pos_ = std::make_shared<KDL::ChainIkSolverPos_NR_JL>(KDL::ChainIkSolverPos_NR_JL(chain_, q_min, q_max, *fkpossolver_.get(), *ikvelsolver_.get()));	
+			sub_state_ = nh_.subscribe("joint_states", 1, &Transform_r_ik_jl::stateCallback, this);
 			
 			try
 			{
@@ -97,14 +122,15 @@ namespace pr2_control
 				ROS_ERROR("%s",e.what());	
 			}
 					
-		 	sub_goal_ = nh_.subscribe("/tf_goal_r_arm", 1, &Transform_r_ik::goalCallback, this);	
+		 	sub_goal_ = nh_.subscribe("/tf_goal_r_arm", 1, &Transform_r_ik_jl::goalCallback, this);	
 			pub_ = nh_.advertise<std_msgs::Float32MultiArray>("/goal_joint_pos_r_arm", 1);
-        		//timer_ = nh_.createTimer(period, &Transform_ik::goalPublishCallback, this);
 	    	}
 	
 	    private:
 		ros::NodeHandle nh_;
-		std::shared_ptr<KDL::ChainIkSolverPos_LMA> ik_solver_;
+		std::shared_ptr<KDL::ChainIkSolverPos_NR_JL> ik_solver_pos_;
+		std::shared_ptr<KDL::ChainFkSolverPos_recursive> fkpossolver_;
+		std::shared_ptr<KDL::ChainIkSolverVel_pinv_givens> ikvelsolver_;
 		std::string base_frame_;
 		std::string target_frame_;
 		bool once_;
@@ -114,7 +140,6 @@ namespace pr2_control
 		ros::Subscriber sub_state_;
 		ros::Subscriber sub_goal_;
 		ros::Publisher pub_;
-	//	ros::Timer timer_;	
 		sensor_msgs::JointState last_joint_state_;
 		KDL::JntArray q_out_;
 		KDL::Frame goal_frame_;

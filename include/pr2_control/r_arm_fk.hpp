@@ -17,7 +17,7 @@ namespace pr2_control
 	{
 
 	    public:
-		Transform_r_fk(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_link"), target_frame_("r_gripper_tool_frame"), once_(true)
+		Transform_r_fk(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_footprint"), target_frame_("r_gripper_tool_frame"), once_(true)
 		{}
 
 		~Transform_r_fk() {}

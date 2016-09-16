@@ -1,9 +1,61 @@
-#ifndef PR2_CONTROL_R_ARM_IK_HPP
-#define PR2_CONTROL_R_ARM_IK_HPP
+#include <kdl/frames.hpp>
+#include <kdl/chainiksolverpos_nr_jl.hpp>
+
+int main() 
+{
+    //I suppose you have (for example from kdl_parser) a KDL::Tree object name tree
+    
+    KDL::Chain chain;
+     
+    //Extract the chain from the tree ("chain_root" and "chain_tip" are name of link of the tree)
+    bool ret = tree.getChain("chain_root","chain_tip",chain);
+    
+    //Forward solvers, needed by the geometric solver
+    KDL::ChainFkSolverPos_recursive fkpossolver(chain);
+    KDL::ChainIkSolverVel_pinv_givens fkvelsolver(chain);
+    
+    //Declare joint limits for the chain
+    KDL::JntArray q_min(chain.getNrOfJoints()),q_max(chain.getNrOfJoints());
+    //Now assigning fake limits, in reality you can get those from urdf
+    for(int i=0; i < chain.getNrOfJoints(); i++ ) {
+        q_min(i) = -1000;
+        q_max(i) = 1000;
+    }
+    
+    //Geometric solver definition (with joint limits)
+    KDL::ChainIkSolverPos_NR_JL inv_pos_solver(chain,q_min,q_max,fksolver,iksolver);
+    
+    //For every position you want calculate
+    {
+        //This should be the desired position, for information on the KDL::Frame class
+        //check http://people.mech.kuleuven.be/~rsmits/kdl/api/html/classKDL_1_1Frame.html
+        KDL::Frame desired_position;
+        
+        //The recursive algorithm need an initial guess, a good one can be
+        //in the middle of limits
+        KDL::JntArray q_init(chain.getNfOfJoints());
+        for(int i=0; i < chain.getNrOfJoints(); i++ ) {
+            q_init(i) = (q_max(i)-q_min(i))/2;
+        }
+        
+        KDL::JntArray desired_q(chain.getNrOfJoints());
+        
+        int status = inv_pos_solver.CartToJnt(q_init,desired_cartesian_position,desired_q);
+        
+        //Now desired_q should have the desired configuration, you can check status
+        //if it is different from zero the solver failed
+    } 
+    
+}
+
+
+#ifndef PR2_CONTROL_R_ARM_IK_JL_HPP
+#define PR2_CONTROL_R_ARM_IK_JL_HPP
 
 #include <ros/ros.h>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chainiksolverpos_lma.hpp>
+#include <kdl/chainiksolverpos_nr_jl.hpp>
 #include <pr2_control/pr2_control_functions.hpp>
 #include <kdl/frames_io.hpp>
 #include <geometry_msgs/Pose.h>
@@ -12,13 +64,13 @@
 
 namespace pr2_control
 {
-	class Transform_r_ik
+	class Transform_r_ik_jl
 	{
 	    public:
-		Transform_r_ik(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_footprint"), target_frame_("r_gripper_tool_frame"), once_(true)
+		Transform_r_ik_jl(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_footprint"), target_frame_("r_gripper_tool_frame"), once_(true)
 		{}
 
-		~Transform_r_ik() {}
+		~Transform_r_ik_jl() {}
 		
 		void stateCallback(const sensor_msgs::JointState::ConstPtr& msg)
 		{
@@ -86,7 +138,7 @@ namespace pr2_control
 			for(size_t i = 0; i <joint_names_.size(); ++i)
 				ROS_INFO("%s", joint_names_[i].c_str());	
 			
-			sub_state_ = nh_.subscribe("joint_states", 1, &Transform_r_ik::stateCallback, this);
+			sub_state_ = nh_.subscribe("joint_states", 1, &Transform_r_ik_jl::stateCallback, this);
 			
 			try
 			{
@@ -97,7 +149,7 @@ namespace pr2_control
 				ROS_ERROR("%s",e.what());	
 			}
 					
-		 	sub_goal_ = nh_.subscribe("/tf_goal_r_arm", 1, &Transform_r_ik::goalCallback, this);	
+		 	sub_goal_ = nh_.subscribe("/tf_goal_r_arm", 1, &Transform_r_ik_jl::goalCallback, this);	
 			pub_ = nh_.advertise<std_msgs::Float32MultiArray>("/goal_joint_pos_r_arm", 1);
         		//timer_ = nh_.createTimer(period, &Transform_ik::goalPublishCallback, this);
 	    	}

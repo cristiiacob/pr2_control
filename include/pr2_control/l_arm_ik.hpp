@@ -15,7 +15,7 @@ namespace pr2_control
 	class Transform_l_ik
 	{
 	    public:
-		Transform_l_ik(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_link"), target_frame_("l_gripper_tool_frame"), once_(true)
+		Transform_l_ik(const ros::NodeHandle& nh): nh_(nh), base_frame_("base_footprint"), target_frame_("l_gripper_tool_frame"), once_(true)
 		{}
 
 		~Transform_l_ik() {}

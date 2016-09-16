@@ -1,9 +1,9 @@
-#include <pr2_control/pr2_keyboard.hpp>
+#include <pr2_control/pr2_keyboard_r.hpp>
 #include <stdlib.h> 
 
 int main(int argc, char **argv)
 {
-   	ros::init(argc, argv, "pr2_keyboard_node");
+   	ros::init(argc, argv, "pr2_keyboard_r_node");
 	ros::NodeHandle nh("~");
 		
 	if (argc != 8)
@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 	tf_pose.orientation.z = strtod(argv[6], NULL);
 	tf_pose.orientation.w = strtod(argv[7], NULL);
 
-    	pr2_control::TFGoal my_tf_goal(nh, tf_pose);
+    	pr2_control::TFGoal_R my_tf_goal(nh, tf_pose);
 
    	 try
    	 {

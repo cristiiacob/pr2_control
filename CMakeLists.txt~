@@ -49,9 +49,6 @@ target_link_libraries(r_arm_ik ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 add_executable(r_arm_ik_jl src/${PROJECT_NAME}/r_arm_ik_jl.cpp)
 target_link_libraries(r_arm_ik_jl ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
-add_executable(l_arm_ik_jl src/${PROJECT_NAME}/l_arm_ik_jl.cpp)
-target_link_libraries(l_arm_ik_jl ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
-
 add_executable(l_arm_ik src/${PROJECT_NAME}/l_arm_ik.cpp)
 target_link_libraries(l_arm_ik ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
